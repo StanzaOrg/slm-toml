@@ -1,11 +1,16 @@
 include? ".slm/stanza.proj"
 pkg-cache: ".slm/pkg-cache"
 
-package toml defined-in "toml.stanza"
-packages toml/*  defined-in "src/"
-packages toml/tests/*  defined-in "tests/"
+package toml defined-in "src/toml.stanza"
+packages toml/* defined-in "src/toml/"
+
+build main :
+  inputs:
+    toml
+  pkg: ".slm/pkgs"
+  ;o: "main"
 
 build-test test:
   inputs:
     toml/tests/basic
-  o: "toml-tests"
+  o: "toml-test"

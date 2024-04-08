@@ -131,10 +131,10 @@ deftest accessors:
 
 deftest parse-error-1:
   try:
-    val data = parse-file("tests/invalid_1.toml")
+    val data = parse-file("src/toml/tests/invalid_1.toml")
     #EXPECT("Reached Invalid Point" == to-string(data))
   catch (e:TomlParserError):
-    #EXPECT(file-name(e) == "tests/invalid_1.toml")
+    #EXPECT(file-name(e) == "src/toml/tests/invalid_1.toml")
     #EXPECT(line(e) == 3)
   catch (e:Exception):
     #EXPECT("Wrong Type of Exception" == e)

@@ -1,6 +1,5 @@
 toml-tests
 .slm
-slm.lock
 
 .vscode/
 .envrc
