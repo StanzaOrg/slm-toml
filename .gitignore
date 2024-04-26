@@ -1,6 +1,6 @@
 toml-tests
 .slm
-
+venv/
 .vscode/
 .envrc
 .stanza
