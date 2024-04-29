@@ -2,4 +2,4 @@ name = "toml"
 version = "0.4.2"
 
 [dependencies]
-maybe-utils = { git = "StanzaOrg/maybe-utils", version = "0.1.5" }
+maybe-utils = { git = "StanzaOrg/maybe-utils", version = "0.1.6" }
