@@ -14,7 +14,7 @@ public defstruct TomlParserError <: Exception :
   msg:String|Printable
 
 defmethod print (o:OutputStream, e:TomlParserError):
-  print(o, "[%_:%~:%~]: error: %~" % [file-name(e), line(e), column(e), to-string(msg(e))])
+  print(o, "[%_:%~:%~]:\n%_" % [file-name(e), line(e), column(e), msg(e)])
 
 defstruct ParsePosition:
   offset: Int
@@ -61,6 +61,10 @@ defn skip-whitespace (parser: Parser) -> False:
   take-while(parser, is-whitespace)
   false
 
+defn skip-spaces (parser: Parser) -> False:
+  take-while(parser, {_ == ' '})
+  false
+
 defn eat-comment (parser: Parser) -> False:
   take-while(parser, fn (c): c != '\n' and c != '\r')
   expect-newline(parser)
@@ -70,14 +74,16 @@ defn expect (parser: Parser, value: Char) -> False|Void:
   if peek(parser) == One(value):
     advance(parser)
   else:
-    error(parser, "Expected: `%~`\nGot: `%~`" % [value, peek(parser)])
+    error(parser, "Expected: %~, found: %~" % [value, peek(parser)])
 
 defn expect-newline (parser: Parser) -> False|Void:
+  skip-spaces(parser)
   if peek(parser) == One('\r'):
     advance(parser)
   expect(parser, '\n')
 
 defn expect-newline-or-eof (parser:Parser) -> False|Void:
+  skip-spaces(parser)
   if peek(parser) == One('\r'):
     advance(parser)
   match(peek(parser)):
@@ -85,7 +91,7 @@ defn expect-newline-or-eof (parser:Parser) -> False|Void:
       if value(c) == '\n':
         advance(parser)
       else:
-        error(parser, "Expected: `%~`\nGot: `%~`" % [value, peek(parser)])
+        error(parser, "Expected: %~, found: %~" % [value, peek(parser)])
     (x:None):
       false
 
@@ -117,7 +123,7 @@ defn parse-table (parser: Parser) -> KeyValue<String, TomlTable>:
   expect(parser, '[')
   val key = parse-key(parser)
   expect(parser, ']')
-  expect-newline(parser)
+  expect-newline-or-eof(parser)
 
   val table = TomlTable()
   parse-table-inner(parser, table, false)
@@ -128,7 +134,7 @@ defn parse-identifier (parser: Parser) -> String:
   debug("trace: parse-identifier")
   val key = take-while(parser, is-identifier)
   if length(key) == 0:
-    error(parser, "Expected identifier, got: `%~`" % [peek(parser)])
+    error(parser, "Expected identifier, found: %~" % [peek(parser)])
   key
 
 defn parse-key (parser: Parser) -> String:
@@ -214,7 +220,7 @@ defn parse-table-inner (parser: Parser, table: TomlTable, root?: True|False) -> 
             insert(table, parse-key-value(parser))
             expect-newline-or-eof(parser)
           else:
-            error(parser, "Unexpected character: '%_'" % [c])
+            error(parser, "Unexpected character: %_" % [c])
         (_):
           error(parser, "Unexpected EOF")
 
