@@ -165,3 +165,53 @@ deftest inline-table-key-num:
   val toml = table $ parse-string $ "foo3 = { bar = { baz = 10, bang = \"hello\" } }\n"
   #EXPECT(toml["foo3.bar.baz"] as Int == 10)
   #EXPECT(toml["foo3.bar.bang"] as String == "hello")
+
+deftest whitespace-line-end:
+  val toml = table $ parse-string $ dedent $ \<>
+    foo = "bar"  
+    bar = 1    
+    [dependencies]    
+    stanza-toml = "git@github.com:tylanphear/stanza-toml"
+    poet = "git@github.com:tylanphear/poet"
+  <>
+
+  #EXPECT(get-str?(toml, "non-existent") is None)
+  #EXPECT(get-int?(toml, "non-existent") is None)
+  #EXPECT(get-table?(toml, "non-existent") is None)
+
+  val uut-str = get-str?(toml, "foo")
+  #EXPECT(uut-str is One)
+  #EXPECT(value!(uut-str) == "bar")
+
+  val uut-int = get-int?(toml, "bar")
+  #EXPECT(uut-int is One)
+  #EXPECT(value!(uut-int) == 1)
+
+  val uut-table = get-table?(toml, "dependencies")
+  #EXPECT(uut-table is One)
+  val cnt = length $ entries $ value!(uut-table)
+  #EXPECT(cnt == 2)
+
+
+deftest no-newline-table:
+  val toml = table $ parse-string $ dedent $ \<>
+    foo = "bar"  
+    bar = 1    
+    [dependencies]<>
+
+  #EXPECT(get-str?(toml, "non-existent") is None)
+  #EXPECT(get-int?(toml, "non-existent") is None)
+  #EXPECT(get-table?(toml, "non-existent") is None)
+
+  val uut-str = get-str?(toml, "foo")
+  #EXPECT(uut-str is One)
+  #EXPECT(value!(uut-str) == "bar")
+
+  val uut-int = get-int?(toml, "bar")
+  #EXPECT(uut-int is One)
+  #EXPECT(value!(uut-int) == 1)
+
+  val uut-table = get-table?(toml, "dependencies")
+  #EXPECT(uut-table is One)
+  val cnt = length $ entries $ value!(uut-table)
+  #EXPECT(cnt == 0)
