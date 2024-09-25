@@ -4,3 +4,5 @@ venv/
 .vscode/
 .envrc
 .stanza
+.conan2
+.conan2.cache
